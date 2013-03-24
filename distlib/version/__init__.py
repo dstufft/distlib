@@ -10,7 +10,7 @@ distribute-compatible and semantic versioning.
 
 import re
 
-from ..compat import string_types
+from .base import Version, Matcher
 
 __all__ = ['NormalizedVersion', 'NormalizedMatcher',
            'LegacyVersion', 'LegacyMatcher',
@@ -37,127 +37,7 @@ class HugeMajorVersionError(UnsupportedVersionError):
     pass
 
 
-class Version(object):
 
-    def __init__(self, s):
-        self._string = s = s.strip()
-        self._parts = parts = self.parse(s)
-        assert isinstance(parts, tuple)
-        assert len(parts) > 0
-
-    def __repr__(self):
-        return "%s(%r)" % (self.__class__.__name__, self._string)
-
-    def __str__(self):
-        return self._string
-
-    def parse(self, s):
-        raise NotImplementedError('please implement in a subclass')
-
-    def _check_compatible(self, other):
-        if type(self) != type(other):
-            raise TypeError('cannot compare %r and %r' % (self, other))
-
-    def __eq__(self, other):
-        self._check_compatible(other)
-        return self._parts == other._parts
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __lt__(self, other):
-        self._check_compatible(other)
-        return self._parts < other._parts
-
-    def __gt__(self, other):
-        return not (self.__lt__(other) or self.__eq__(other))
-
-    def __le__(self, other):
-        return self.__lt__(other) or self.__eq__(other)
-
-    def __ge__(self, other):
-        return self.__gt__(other) or self.__eq__(other)
-
-    # See http://docs.python.org/reference/datamodel#object.__hash__
-    def __hash__(self):
-        return hash(self._parts)
-
-    @property
-    def is_prerelease(self):
-        raise NotImplementedError('Please implement in subclasses.')
-
-class Matcher(object):
-    version_class = None
-
-    predicate_re = re.compile(r"^(\w[\s\w'.-]*)(\((.*)\))?")
-    constraint_re = re.compile(r'^(<=|>=|<|>|!=|==)?\s*([^\s,]+)$')
-
-    _operators = {
-        "<": lambda x, y: x < y,
-        ">": lambda x, y: x > y,
-        "<=": lambda x, y: x == y or x < y,
-        ">=": lambda x, y: x == y or x > y,
-        "==": lambda x, y: x == y,
-        "!=": lambda x, y: x != y,
-    }
-
-    def __init__(self, s):
-        if self.version_class is None:
-            raise ValueError('Please specify a version class')
-        self._string = s = s.strip()
-        m = self.predicate_re.match(s)
-        if not m:
-            raise ValueError('Not valid: %r' % s)
-        groups = m.groups('')
-        self.name = groups[0].strip()
-        self.key = self.name.lower()    # for case-insensitive comparisons
-        clist = []
-        if groups[2]:
-            constraints = [c.strip() for c in groups[2].split(',')]
-            for c in constraints:
-                m = self.constraint_re.match(c)
-                if not m:
-                    raise ValueError('Invalid %r in %r' % (c, s))
-                groups = m.groups('==')
-                clist.append((groups[0], self.version_class(groups[1])))
-        self._parts = tuple(clist)
-
-    def __repr__(self):
-        return "%s(%r)" % (self.__class__.__name__, self._string)
-
-    def __str__(self):
-        return self._string
-
-    def match(self, version):
-        """Check if the provided version matches the constraints."""
-        if isinstance(version, string_types):
-            version = self.version_class(version)
-        for operator, constraint in self._parts:
-            if not self._operators[operator](version, constraint):
-                return False
-        return True
-
-    @property
-    def exact_version(self):
-        result = None
-        if len(self._parts) == 1 and self._parts[0][0] == '==':
-            result = self._parts[0][1]
-        return result
-
-    def _check_compatible(self, other):
-        if type(self) != type(other) or self.name != other.name:
-            raise TypeError('cannot compare %s and %s' % (self, other))
-
-    def __eq__(self, other):
-        self._check_compatible(other)
-        return (self.key == other.key and self._parts == other._parts)
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    # See http://docs.python.org/reference/datamodel#object.__hash__
-    def __hash__(self):
-        return hash(self.key) + hash(self._parts)
 
 # A marker used in the second and third parts of the `parts` tuple, for
 # versions that don't have those segments, to sort properly. An example
