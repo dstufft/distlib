@@ -125,3 +125,40 @@ class Matcher(object):
     # See http://docs.python.org/reference/datamodel#object.__hash__
     def __hash__(self):
         return hash(self.key) + hash(self._parts)
+
+
+class VersionScheme(object):
+
+    def __init__(self, key, matcher, suggester=None):
+        self.key = key
+        self.matcher = matcher
+        self.suggester = suggester
+
+    def is_valid_version(self, s):
+        try:
+            self.matcher.version_class(s)
+            result = True
+        except ValueError:
+            result = False
+        return result
+
+    def is_valid_matcher(self, s):
+        try:
+            self.matcher(s)
+            result = True
+        except ValueError:
+            result = False
+        return result
+
+    def is_valid_constraint_list(self, s):
+        """
+        Used for processing some metadata fields
+        """
+        return self.is_valid_matcher('dummy_name (%s)' % s)
+
+    def suggest(self, s):
+        if self.suggester is None:
+            result = None
+        else:
+            result = self.suggester(s)
+        return result

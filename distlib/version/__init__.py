@@ -10,7 +10,7 @@ distribute-compatible and semantic versioning.
 
 import re
 
-from .base import Version, Matcher
+from .base import Version, Matcher, VersionScheme
 from .standard import NormalizedVersion, NormalizedMatcher
 
 __all__ = ['NormalizedVersion', 'NormalizedMatcher',
@@ -488,41 +488,6 @@ class AdaptiveVersion(NormalizedVersion):
 class AdaptiveMatcher(NormalizedMatcher):
     version_class = AdaptiveVersion
 
-
-class VersionScheme(object):
-    def __init__(self, key, matcher, suggester=None):
-        self.key = key
-        self.matcher = matcher
-        self.suggester = suggester
-
-    def is_valid_version(self, s):
-        try:
-            self.matcher.version_class(s)
-            result = True
-        except ValueError:
-            result = False
-        return result
-
-    def is_valid_matcher(self, s):
-        try:
-            self.matcher(s)
-            result = True
-        except ValueError:
-            result = False
-        return result
-
-    def is_valid_constraint_list(self, s):
-        """
-        Used for processing some metadata fields
-        """
-        return self.is_valid_matcher('dummy_name (%s)' % s)
-
-    def suggest(self, s):
-        if self.suggester is None:
-            result = None
-        else:
-            result = self.suggester(s)
-        return result
 
 _SCHEMES = {
     'normalized': VersionScheme(normalized_key, NormalizedMatcher,
