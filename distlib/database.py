@@ -17,7 +17,7 @@ import zipimport
 
 from . import DistlibException
 from .compat import StringIO, configparser, string_types
-from .version import get_scheme, UnsupportedVersionError
+from .version import get_scheme
 from .markers import interpret
 from .metadata import Metadata
 from .util import (parse_requirement, cached_property, get_export_entry,
@@ -395,7 +395,7 @@ class Distribution(object):
         scheme = get_scheme(self.metadata.scheme)
         try:
             matcher = scheme.matcher(req)
-        except UnsupportedVersionError:
+        except ValueError:
             # XXX compat-mode if cannot read the version
             logger.warning('could not read version %r - using name only',
                            req)
@@ -415,7 +415,7 @@ class Distribution(object):
             try:
                 result = matcher.match(version)
                 break
-            except UnsupportedVersionError:
+            except ValueError:
                 pass
         return result
 
@@ -1216,7 +1216,7 @@ def make_graph(dists, scheme='default'):
         for req in requires:
             try:
                 matcher = scheme.matcher(req)
-            except UnsupportedVersionError:
+            except ValueError:
                 # XXX compat-mode if cannot read the version
                 logger.warning('could not read version %r - using name only',
                                req)
@@ -1230,7 +1230,7 @@ def make_graph(dists, scheme='default'):
                 for version, provider in provided[name]:
                     try:
                         match = matcher.match(version)
-                    except UnsupportedVersionError:
+                    except ValueError:
                         match = False
 
                     if match:

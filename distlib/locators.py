@@ -25,7 +25,7 @@ from .metadata import Metadata
 from .util import (cached_property, parse_credentials, ensure_slash,
                    split_filename, get_project_data, parse_requirement,
                    ServerProxy)
-from .version import get_scheme, UnsupportedVersionError
+from .version import get_scheme
 from .wheel import Wheel, is_compatible
 
 logger = logging.getLogger(__name__)
@@ -964,7 +964,7 @@ class DependencyFinder(object):
         """
         try:
             matcher = self.scheme.matcher(reqt)
-        except UnsupportedVersionError:
+        except ValueError:
             # XXX compat-mode if cannot read the version
             name = reqt.split()[0]
             matcher = self.scheme.matcher(name)
@@ -986,7 +986,7 @@ class DependencyFinder(object):
             for version, provider in provided[name]:
                 try:
                     match = matcher.match(version)
-                except UnsupportedVersionError:
+                except ValueError:
                     match = False
 
                 if match:
