@@ -11,8 +11,8 @@ from compat import unittest
 from distlib.version import (NormalizedVersion as NV, NormalizedMatcher as NM,
                              LegacyVersion as LV, LegacyMatcher as LM,
                              SemanticVersion as SV, SemanticMatcher as SM,
-                             AdaptiveVersion as AV, AdaptiveMatcher as AM,
-                             get_scheme)
+                             AdaptiveVersion as AV, AdaptiveMatcher as AM)
+from distlib import version
 
 
 class VersionTestCase(unittest.TestCase):
@@ -152,7 +152,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertGreater(NV('1.0c4'), NV('1.0c1'))
 
     def test_suggest_normalized_version(self):
-        suggest = get_scheme("normalized").suggest
+        suggest = version.normalized.suggest
         self.assertEqual(suggest('1.0'), '1.0')
         self.assertEqual(suggest('1.0-alpha1'), '1.0a1')
         self.assertEqual(suggest('1.0c2'), '1.0c2')
@@ -184,11 +184,11 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(suggest('1.4p1'), '1.4.post1')
 
     def test_suggestions_other(self):
-        suggest = get_scheme("semantic").suggest
+        suggest = version.semantic.suggest
         self.assertEqual(suggest(''), '0.0.0')
         self.assertEqual(suggest('1'), '1.0.0')
         self.assertEqual(suggest('1.2'), '1.2.0')
-        suggest = get_scheme("adaptive").suggest
+        suggest = version.adaptive.suggest
         self.assertEqual(suggest('1.0-alpha1'), '1.0a1')
 
     def test_matcher(self):
@@ -276,14 +276,12 @@ class VersionTestCase(unittest.TestCase):
         )
 
         for name, values in cases:
-            scheme = get_scheme(name)
+            scheme = getattr(version, name)
             verion_class, matcher = values
             self.assertIs(verion_class, scheme.version_class)
             self.assertIs(matcher, scheme.matcher)
 
-        self.assertIs(get_scheme('default'), get_scheme('adaptive'))
-
-        self.assertRaises(ValueError, get_scheme, 'random')
+        self.assertIs(version.default, version.adaptive)
 
     def test_prereleases(self):
         pre_releases = (

@@ -24,17 +24,17 @@ __all__ = ['NormalizedVersion', 'NormalizedMatcher',
            'get_scheme']
 
 
-_SCHEMES = {
-    'normalized': NormalizedVersionScheme(),
-    'legacy': LegacyVersionScheme(),
-    'semantic': SemanticVersionScheme(),
-    'adaptive': AdaptiveVersionScheme(),
-}
+# The "Normalized" version scheme, this implements PEP426
+normalized = NormalizedVersionScheme()
 
-_SCHEMES['default'] = _SCHEMES['adaptive']
+# The "Legacy" version scheme, this is setuptools/distribute compatible
+legacy = LegacyVersionScheme()
 
+# The "Semantic" version scheme, this implements SemVer.org
+semantic = SemanticVersionScheme()
 
-def get_scheme(name):
-    if name not in _SCHEMES:
-        raise ValueError('unknown scheme name: %r' % name)
-    return _SCHEMES[name]
+# The "Adaptive" version scheme, this is Normalized and Semantic combined
+adaptive = AdaptiveVersionScheme()
+
+# The default version scheme
+default = adaptive
