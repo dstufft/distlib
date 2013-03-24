@@ -131,7 +131,6 @@ class VersionScheme(object):
 
     version_class = None
     matcher = None
-    suggester = None
 
     def __init__(self, version_class=None, matcher=None, suggester=None):
         if version_class is not None:
@@ -141,7 +140,7 @@ class VersionScheme(object):
             self.matcher = matcher
 
         if suggester is not None:
-            self.suggester = suggester
+            self.suggest = suggester
 
         if self.version_class is None:
             raise TypeError("There is no defined version class for %s" % str(self))
@@ -172,8 +171,4 @@ class VersionScheme(object):
         return self.is_valid_matcher('dummy_name (%s)' % s)
 
     def suggest(self, s):
-        if self.suggester is None:
-            result = s
-        else:
-            result = self.suggester(s)
-        return result
+        return s

@@ -275,18 +275,17 @@ class VersionTestCase(unittest.TestCase):
 
     def test_schemes(self):
         cases = (
-            ('normalized', (NV, NM, suggest_normalized_version)),
-            ('legacy', (LV, LM, None)),
-            ('semantic', (SV, SM, suggest_semantic_version)),
-            ('adaptive', (AV, AM, suggest_adaptive_version)),
+            ('normalized', (NV, NM)),
+            ('legacy', (LV, LM)),
+            ('semantic', (SV, SM)),
+            ('adaptive', (AV, AM)),
         )
 
         for name, values in cases:
             scheme = get_scheme(name)
-            verion_class, matcher, suggester = values
+            verion_class, matcher = values
             self.assertIs(verion_class, scheme.version_class)
             self.assertIs(matcher, scheme.matcher)
-            self.assertIs(suggester, scheme.suggester)
 
         self.assertIs(get_scheme('default'), get_scheme('adaptive'))
 
