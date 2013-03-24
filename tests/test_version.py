@@ -9,7 +9,6 @@ import doctest
 from compat import unittest
 
 from distlib.version import (NormalizedVersion as NV, NormalizedMatcher as NM,
-                             UnlimitedMajorVersion as UV,
                              LegacyVersion as LV, LegacyMatcher as LM,
                              SemanticVersion as SV, SemanticMatcher as SM,
                              AdaptiveVersion as AV, AdaptiveMatcher as AM,

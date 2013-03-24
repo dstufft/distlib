@@ -168,11 +168,6 @@ def pep426_key(s, _=None):
 
 normalized_key = pep426_key
 
-
-class UnlimitedMajorVersion(Version):
-    def parse(self, s): return normalized_key(s, False)
-
-
 _SCHEMES = {
     'normalized': NormalizedVersionScheme(),
     'legacy': LegacyVersionScheme(),
