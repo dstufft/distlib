@@ -8,6 +8,7 @@ import doctest
 
 from compat import unittest
 
+from distlib.version import get_scheme
 from distlib.version.normalized import (
     NormalizedVersion as NV, NormalizedMatcher as NM)
 from distlib.version.legacy import (
@@ -16,7 +17,6 @@ from distlib.version.semantic import (
     SemanticVersion as SV, SemanticMatcher as SM)
 from distlib.version.adaptive import (
     AdaptiveVersion as AV, AdaptiveMatcher as AM)
-from distlib import version
 
 
 class VersionTestCase(unittest.TestCase):
@@ -156,7 +156,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertGreater(NV('1.0c4'), NV('1.0c1'))
 
     def test_suggest_normalized_version(self):
-        suggest = version.normalized.suggest
+        suggest = get_scheme("normalized").suggest
         self.assertEqual(suggest('1.0'), '1.0')
         self.assertEqual(suggest('1.0-alpha1'), '1.0a1')
         self.assertEqual(suggest('1.0c2'), '1.0c2')
@@ -188,11 +188,11 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(suggest('1.4p1'), '1.4.post1')
 
     def test_suggestions_other(self):
-        suggest = version.semantic.suggest
+        suggest = get_scheme("semantic").suggest
         self.assertEqual(suggest(''), '0.0.0')
         self.assertEqual(suggest('1'), '1.0.0')
         self.assertEqual(suggest('1.2'), '1.2.0')
-        suggest = version.adaptive.suggest
+        suggest = get_scheme("adaptive").suggest
         self.assertEqual(suggest('1.0-alpha1'), '1.0a1')
 
     def test_matcher(self):
@@ -280,12 +280,14 @@ class VersionTestCase(unittest.TestCase):
         )
 
         for name, values in cases:
-            scheme = getattr(version, name)
+            scheme = get_scheme(name)
             verion_class, matcher = values
             self.assertIs(verion_class, scheme.version_class)
             self.assertIs(matcher, scheme.matcher)
 
-        self.assertIs(version.default, version.adaptive)
+        self.assertIs(get_scheme('default'), get_scheme('adaptive'))
+
+        self.assertRaises(KeyError, get_scheme, 'random')
 
     def test_prereleases(self):
         pre_releases = (

@@ -14,20 +14,24 @@ from .semantic import SemanticVersionScheme
 from .adaptive import AdaptiveVersionScheme
 
 
-__all__ = ["normalized", "legacy", "semantic", "adaptive", "default"]
+__all__ = [
+    "NormalizedVersionScheme", "LegacyVersionScheme", "SemanticVersionScheme",
+    "AdaptiveVersionScheme", "get_scheme",
+]
 
 
-# The "Normalized" version scheme, this implements PEP426
-normalized = NormalizedVersionScheme()
+_SCHEMES = {
+    "normalized": NormalizedVersionScheme(),
+    "legacy": LegacyVersionScheme(),
+    "semantic": SemanticVersionScheme(),
+    "adaptive": AdaptiveVersionScheme(),
+}
 
-# The "Legacy" version scheme, this is setuptools/distribute compatible
-legacy = LegacyVersionScheme()
+_SCHEMES["default"] = _SCHEMES["adaptive"]
 
-# The "Semantic" version scheme, this implements SemVer.org
-semantic = SemanticVersionScheme()
 
-# The "Adaptive" version scheme, this is Normalized and Semantic combined
-adaptive = AdaptiveVersionScheme()
-
-# The default version scheme
-default = adaptive
+def get_scheme(name):
+    try:
+        return _SCHEMES[name]
+    except KeyError:
+        raise KeyError("unknown scheme name: %s" % name)
