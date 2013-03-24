@@ -1,5 +1,5 @@
 from .base import Version, Matcher, VersionScheme
-from .normalized import NormalizedVersionScheme
+from .normalized import NormalizedVersionScheme, NormalizedMatcher
 from .semantic import SemanticVersionScheme
 
 
@@ -30,7 +30,7 @@ class AdaptiveVersion(Version):
         raise ValueError("Not a valid version: '%s'" % version_string)
 
 
-class AdaptiveMatcher(Matcher):
+class AdaptiveMatcher(NormalizedMatcher, Matcher):
 
     version_class = AdaptiveVersion
 
