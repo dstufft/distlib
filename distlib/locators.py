@@ -327,7 +327,7 @@ class Locator(object):
                     logger.warning('error matching %s with %r', matcher, k)
                     pass # slist.append(k)
             if len(slist) > 1:
-                slist = sorted(slist, key=scheme.key)
+                slist = sorted(slist, key=scheme)
             if slist:
                 logger.debug('sorted list: %s', slist)
                 result = versions[slist[-1]]

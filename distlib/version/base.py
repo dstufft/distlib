@@ -148,6 +148,14 @@ class VersionScheme(object):
         if self.matcher is None:
             raise TypeError("There is no defined matcher for %s" % str(self))
 
+    def __call__(self, version_string):
+        """
+        Constucts and returns a Version instance of this scheme.
+        """
+        if self.version_class is None:
+            raise TypeError("%s has no associated version class" % str(self))
+        return self.version_class(version_string)
+
     def is_valid_version(self, s):
         try:
             self.matcher.version_class(s)
