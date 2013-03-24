@@ -37,20 +37,19 @@ class HugeMajorVersionError(UnsupportedVersionError):
     pass
 
 
-class _Common(object):
-    def __repr__(self):
-        return "%s(%r)" % (self.__class__.__name__, self._string)
+class Version(object):
 
-    def __str__(self):
-        return self._string
-
-
-class Version(_Common):
     def __init__(self, s):
         self._string = s = s.strip()
         self._parts = parts = self.parse(s)
         assert isinstance(parts, tuple)
         assert len(parts) > 0
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__.__name__, self._string)
+
+    def __str__(self):
+        return self._string
 
     def parse(self, s):
         raise NotImplementedError('please implement in a subclass')
@@ -87,7 +86,7 @@ class Version(_Common):
     def is_prerelease(self):
         raise NotImplementedError('Please implement in subclasses.')
 
-class Matcher(_Common):
+class Matcher(object):
     version_class = None
 
     predicate_re = re.compile(r"^(\w[\s\w'.-]*)(\((.*)\))?")
@@ -122,6 +121,12 @@ class Matcher(_Common):
                 groups = m.groups('==')
                 clist.append((groups[0], self.version_class(groups[1])))
         self._parts = tuple(clist)
+
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__.__name__, self._string)
+
+    def __str__(self):
+        return self._string
 
     def match(self, version):
         """Check if the provided version matches the constraints."""
