@@ -12,6 +12,7 @@ import re
 
 from .base import Version, Matcher, VersionScheme
 from .standard import NormalizedVersion, NormalizedMatcher, NormalizedVersionScheme
+from .legacy import LegacyVersion, LegacyMatcher, LegacyVersionScheme
 
 __all__ = ['NormalizedVersion', 'NormalizedMatcher',
            'LegacyVersion', 'LegacyMatcher',
@@ -243,60 +244,7 @@ def suggest_semantic_version(s):
 def suggest_adaptive_version(s):
     return NormalizedVersionScheme().suggest(s) or suggest_semantic_version(s)
 
-#
-#   Legacy version processing (distribute-compatible)
-#
 
-_VERSION_PART = re.compile(r'([a-z]+|\d+|[\.-])', re.I)
-_VERSION_REPLACE = {
-    'pre':'c',
-    'preview':'c',
-    '-':'final-',
-    'rc':'c',
-    'dev':'@',
-    '': None,
-    '.': None,
-}
-
-
-def legacy_key(s):
-    def get_parts(s):
-        result = []
-        for p in _VERSION_PART.split(s.lower()):
-            p = _VERSION_REPLACE.get(p, p)
-            if p:
-                if '0' <= p[:1]  <= '9':
-                    p = p.zfill(8)
-                else:
-                    p = '*' + p
-                result.append(p)
-        result.append('*final')
-        return result
-
-    result = []
-    for p in get_parts(s):
-        if p.startswith('*'):
-            if p < '*final':
-                while result and result[-1] == '*final-':
-                    result.pop()
-            while result and result[-1] == '00000000':
-                result.pop()
-        result.append(p)
-    return tuple(result)
-
-class LegacyVersion(Version):
-    def parse(self, s): return legacy_key(s)
-
-    PREREL_TAGS = set(
-        ['*a', '*alpha', '*b', '*beta', '*c', '*rc', '*r', '*@', '*pre']
-    )
-
-    @property
-    def is_prerelease(self):
-        return any(x in self.PREREL_TAGS for x in self._parts)
-
-class LegacyMatcher(Matcher):
-    version_class = LegacyVersion
 
 #
 #   Semantic versioning
@@ -381,7 +329,7 @@ class AdaptiveMatcher(NormalizedMatcher):
 
 _SCHEMES = {
     'normalized': NormalizedVersionScheme(),
-    'legacy': VersionScheme(LegacyVersion, LegacyMatcher),
+    'legacy': LegacyVersionScheme(),
     'semantic': VersionScheme(SemanticVersion, SemanticMatcher,
                               suggest_semantic_version),
     'adaptive': VersionScheme(AdaptiveVersion, AdaptiveMatcher,

@@ -16,7 +16,7 @@ from distlib.version import (NormalizedVersion as NV, NormalizedMatcher as NM,
                              SemanticVersion as SV, SemanticMatcher as SM,
                              AdaptiveVersion as AV, AdaptiveMatcher as AM,
                              is_semver, get_scheme, adaptive_key,
-                             normalized_key, legacy_key, semantic_key,
+                             normalized_key, semantic_key,
                              pep386_key)
 
 
@@ -369,12 +369,12 @@ class VersionTestCase(unittest.TestCase):
             v2 = versions[i + 1]
             self.assertLess(F(v1), F(v2), v1)
 
+
 class LegacyVersionTestCase(unittest.TestCase):
-    # These tests are the same as distribute's
+
     def test_equality(self):
         def compare(a, b):
-            ka, kb = legacy_key(a), legacy_key(b)
-            self.assertEqual(ka, kb)
+            self.assertEqual(LV(a), LV(b))
 
         compare('0.4', '0.4.0')
         compare('0.4.0.0', '0.4.0')
@@ -388,14 +388,13 @@ class LegacyVersionTestCase(unittest.TestCase):
 
     def test_ordering(self):
         def compare(a, b):
-            ka, kb = legacy_key(a), legacy_key(b)
-            self.assertLess(ka, kb)
+            self.assertLess(LV(a), LV(b))
 
-        compare('2.1','2.1.1')
-        compare('2.1.0','2.10')
-        compare('2a1','2b0')
-        compare('2b1','2c0')
-        compare('2a1','2.1')
+        compare('2.1', '2.1.1')
+        compare('2.1.0', '2.10')
+        compare('2a1', '2b0')
+        compare('2b1', '2c0')
+        compare('2a1', '2.1')
         compare('2.3a1', '2.3')
         compare('2.1-1', '2.1-2')
         compare('2.1-1', '2.1.1')
@@ -403,25 +402,25 @@ class LegacyVersionTestCase(unittest.TestCase):
         compare('2.1', '2.1pl4')
         compare('2.1a0-20040501', '2.1')
         compare('1.1', '02.1')
-        compare('A56','B27')
+        compare('A56', 'B27')
         compare('3.2', '3.2.pl0')
         compare('3.2-1', '3.2pl1')
         compare('3.2pl1', '3.2pl1-1')
         compare('0.4', '4.0')
         compare('0.0.4', '0.4.0')
         compare('0pl1', '0.4pl1')
-        compare('2.1dev','2.1a0')
-        compare('2.1.0rc1','2.1.0')
-        compare('2.1.0-rc0','2.1.0')
-        compare('2.1.0-a','2.1.0')
-        compare('2.1.0-alpha','2.1.0')
-        compare('2.1.0','2.1.0-foo')
-        compare('1.0','1.0-1')
-        compare('1.0-1','1.0.1')
-        compare('1.0a','1.0b')
-        compare('1.0dev','1.0rc1')
-        compare('1.0pre','1.0')
-        compare('1.0pre','1.0')
+        compare('2.1dev', '2.1a0')
+        compare('2.1.0rc1', '2.1.0')
+        compare('2.1.0-rc0', '2.1.0')
+        compare('2.1.0-a', '2.1.0')
+        compare('2.1.0-alpha', '2.1.0')
+        compare('2.1.0', '2.1.0-foo')
+        compare('1.0', '1.0-1')
+        compare('1.0-1', '1.0.1')
+        compare('1.0a', '1.0b')
+        compare('1.0dev', '1.0rc1')
+        compare('1.0pre', '1.0')
+        compare('1.0pre', '1.0')
 
         versions = """
         0.80.1-3 0.80.1-2 0.80.1-1 0.79.9999+0.80.0pre4-1
@@ -438,7 +437,7 @@ class LegacyVersionTestCase(unittest.TestCase):
             ('1.0-beta6', ('00000001', '*beta', '00000006', '*final')),
         )
         for k, v in cases:
-            self.assertEqual(legacy_key(k), v)
+            self.assertEqual(LV(k)._parts, v)
 
     def test_prereleases(self):
         pre_releases = (
