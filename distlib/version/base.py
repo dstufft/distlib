@@ -6,10 +6,8 @@ from ..compat import string_types
 class Version(object):
 
     def __init__(self, s):
-        self._string = s = s.strip()
-        self._parts = parts = self.parse(s)
-        assert isinstance(parts, tuple)
-        assert len(parts) > 0
+        self._string = s.strip()
+        self._parts = self.parse(self._string)
 
     def __repr__(self):
         return "%s(%r)" % (self.__class__.__name__, self._string)
