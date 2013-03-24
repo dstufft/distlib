@@ -156,7 +156,7 @@ class VersionScheme(object):
 
     def is_valid_version(self, s):
         try:
-            self.matcher.version_class(s)
+            self.version_class(s)
             result = True
         except ValueError:
             result = False
