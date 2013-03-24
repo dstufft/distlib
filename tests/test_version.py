@@ -61,7 +61,7 @@ class VersionTestCase(unittest.TestCase):
                       '1.2.dev2.post2', '1.2.post2.dev3.post4')
 
         for s in unsupported:
-            self.assertRaises(UnsupportedVersionError, NV, s)
+            self.assertRaises(ValueError, NV, s)
 
     def test_huge_version(self):
         raise unittest.SkipTest('Test disabled for now')

@@ -11,6 +11,7 @@ distribute-compatible and semantic versioning.
 import re
 
 from .base import Version, Matcher
+from .standard import NormalizedVersion, NormalizedMatcher
 
 __all__ = ['NormalizedVersion', 'NormalizedMatcher',
            'LegacyVersion', 'LegacyMatcher',
@@ -180,57 +181,10 @@ def pep426_key(s, _=None):
 
 normalized_key = pep426_key
 
-class NormalizedVersion(Version):
-    """A rational version.
-
-    Good:
-        1.2         # equivalent to "1.2.0"
-        1.2.0
-        1.2a1
-        1.2.3a2
-        1.2.3b1
-        1.2.3c1
-        1.2.3.4
-        TODO: fill this out
-
-    Bad:
-        1           # mininum two numbers
-        1.2a        # release level must have a release serial
-        1.2.3b
-    """
-    def parse(self, s): return normalized_key(s)
-
-    PREREL_TAGS = set(['a', 'b', 'c', 'rc', 'dev'])
-
-    @property
-    def is_prerelease(self):
-        return any(t[0] in self.PREREL_TAGS for t in self._parts)
 
 class UnlimitedMajorVersion(Version):
     def parse(self, s): return normalized_key(s, False)
 
-# We want '2.5' to match '2.5.4' but not '2.50'.
-
-def _match_at_front(x, y):
-    if x == y:
-        return True
-    x = str(x)
-    y = str(y)
-    if not x.startswith(y):
-        return False
-    n = len(y)
-    return x[n] == '.'
-
-class NormalizedMatcher(Matcher):
-    version_class = NormalizedVersion
-
-    _operators = dict(Matcher._operators)
-    _operators.update({
-        "<=": lambda x, y: _match_at_front(x, y) or x < y,
-        ">=": lambda x, y: _match_at_front(x, y) or x > y,
-        "==": lambda x, y: _match_at_front(x, y),
-        "!=": lambda x, y: not _match_at_front(x, y),
-    })
 
 _REPLACEMENTS = (
     (re.compile('[.+-]$'), ''),                     # remove trailing puncts
