@@ -8,20 +8,13 @@ Implementation of a flexible versioning scheme providing support for PEP-426,
 distribute-compatible and semantic versioning.
 """
 
-from .standard import NormalizedVersion, NormalizedMatcher, NormalizedVersionScheme
-from .semantic import SemanticVersion, SemanticMatcher, SemanticVersionScheme
-from .legacy import LegacyVersion, LegacyMatcher, LegacyVersionScheme
-from .adaptive import AdaptiveVersion, AdaptiveMatcher, AdaptiveVersionScheme
+from .normalized import NormalizedVersionScheme
+from .legacy import LegacyVersionScheme
+from .semantic import SemanticVersionScheme
+from .adaptive import AdaptiveVersionScheme
 
-__all__ = ['NormalizedVersion', 'NormalizedMatcher',
-           'LegacyVersion', 'LegacyMatcher',
-           'SemanticVersion', 'SemanticMatcher',
-           'AdaptiveVersion', 'AdaptiveMatcher',
-           'UnsupportedVersionError', 'HugeMajorVersionError',
-           'suggest_semantic_version',
-           'suggest_adaptive_version',
-           'normalized_key', 'legacy_key', 'semantic_key', 'adaptive_key',
-           'get_scheme']
+
+__all__ = ["normalized", "legacy", "semantic", "adaptive", "default"]
 
 
 # The "Normalized" version scheme, this implements PEP426

@@ -1,5 +1,5 @@
 from .base import Version, Matcher, VersionScheme
-from .standard import NormalizedVersionScheme
+from .normalized import NormalizedVersionScheme
 from .semantic import SemanticVersionScheme
 
 

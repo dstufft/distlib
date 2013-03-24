@@ -8,10 +8,14 @@ import doctest
 
 from compat import unittest
 
-from distlib.version import (NormalizedVersion as NV, NormalizedMatcher as NM,
-                             LegacyVersion as LV, LegacyMatcher as LM,
-                             SemanticVersion as SV, SemanticMatcher as SM,
-                             AdaptiveVersion as AV, AdaptiveMatcher as AM)
+from distlib.version.normalized import (
+    NormalizedVersion as NV, NormalizedMatcher as NM)
+from distlib.version.legacy import (
+    LegacyVersion as LV, LegacyMatcher as LM)
+from distlib.version.semantic import (
+    SemanticVersion as SV, SemanticMatcher as SM)
+from distlib.version.adaptive import (
+    AdaptiveVersion as AV, AdaptiveMatcher as AM)
 from distlib import version
 
 
