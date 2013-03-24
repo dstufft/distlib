@@ -10,12 +10,10 @@ from compat import unittest
 
 from distlib.version import (NormalizedVersion as NV, NormalizedMatcher as NM,
                              UnlimitedMajorVersion as UV,
-                             suggest_adaptive_version,
                              LegacyVersion as LV, LegacyMatcher as LM,
                              SemanticVersion as SV, SemanticMatcher as SM,
                              AdaptiveVersion as AV, AdaptiveMatcher as AM,
-                             get_scheme, adaptive_key,
-                             normalized_key,
+                             get_scheme,
                              pep386_key)
 
 
@@ -192,7 +190,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(suggest(''), '0.0.0')
         self.assertEqual(suggest('1'), '1.0.0')
         self.assertEqual(suggest('1.2'), '1.2.0')
-        suggest = suggest_adaptive_version
+        suggest = get_scheme("adaptive").suggest
         self.assertEqual(suggest('1.0-alpha1'), '1.0a1')
 
     def test_matcher(self):

@@ -14,6 +14,7 @@ from .base import Version, Matcher, VersionScheme
 from .standard import NormalizedVersion, NormalizedMatcher, NormalizedVersionScheme
 from .semantic import SemanticVersion, SemanticMatcher, SemanticVersionScheme
 from .legacy import LegacyVersion, LegacyMatcher, LegacyVersionScheme
+from .adaptive import AdaptiveVersion, AdaptiveMatcher, AdaptiveVersionScheme
 
 __all__ = ['NormalizedVersion', 'NormalizedMatcher',
            'LegacyVersion', 'LegacyMatcher',
@@ -172,54 +173,11 @@ class UnlimitedMajorVersion(Version):
     def parse(self, s): return normalized_key(s, False)
 
 
-def suggest_adaptive_version(s):
-    return NormalizedVersionScheme().suggest(s) or SemanticVersionScheme().suggest(s)
-
-
-
-#
-# Adaptive versioning. When handed a legacy version string, tries to
-# determine a suggested normalized version, and work with that.
-#
-
-def adaptive_key(s):
-    try:
-        result = normalized_key(s, False)
-    except ValueError:
-        ss = NormalizedVersionScheme().suggest(s)
-        if ss is not None:
-            result = normalized_key(ss)     # "guaranteed" to work
-        else:
-            ss = s  # suggest_semantic_version(s) or s
-            result = SemanticVersion(ss)._parts  # let's hope ...
-    return result
-
-
-class AdaptiveVersion(NormalizedVersion):
-    def parse(self, s): return adaptive_key(s)
-
-    @property
-    def is_prerelease(self):
-        try:
-            normalized_key(self._string)
-            not_sem = True
-        except ValueError:
-            ss = NormalizedVersionScheme().suggest(self._string)
-            not_sem = ss is not None
-        if not_sem:
-            return any(t[0] in self.PREREL_TAGS for t in self._parts)
-        return self._parts[1][0] != '|'
-
-class AdaptiveMatcher(NormalizedMatcher):
-    version_class = AdaptiveVersion
-
-
 _SCHEMES = {
     'normalized': NormalizedVersionScheme(),
     'legacy': LegacyVersionScheme(),
     'semantic': SemanticVersionScheme(),
-    'adaptive': VersionScheme(AdaptiveVersion, AdaptiveMatcher,
-                              suggest_adaptive_version),
+    'adaptive': AdaptiveVersionScheme(),
 }
 
 _SCHEMES['default'] = _SCHEMES['adaptive']
