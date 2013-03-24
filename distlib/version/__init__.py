@@ -10,7 +10,7 @@ distribute-compatible and semantic versioning.
 
 import re
 
-from .compat import string_types
+from ..compat import string_types
 
 __all__ = ['NormalizedVersion', 'NormalizedMatcher',
            'LegacyVersion', 'LegacyMatcher',

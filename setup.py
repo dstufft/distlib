@@ -62,6 +62,7 @@ distutils.core.setup(
     platforms='any',
     packages=[
         'distlib',
+        'distlib.version',
         'distlib._backport',
     ],
     cmdclass={
