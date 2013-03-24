@@ -490,12 +490,12 @@ class AdaptiveMatcher(NormalizedMatcher):
 
 
 _SCHEMES = {
-    'normalized': VersionScheme(normalized_key, NormalizedMatcher,
+    'normalized': VersionScheme(NormalizedVersion, NormalizedMatcher,
                                 suggest_normalized_version),
-    'legacy': VersionScheme(legacy_key, LegacyMatcher, lambda self, s: s),
-    'semantic': VersionScheme(semantic_key, SemanticMatcher,
+    'legacy': VersionScheme(LegacyVersion, LegacyMatcher),
+    'semantic': VersionScheme(SemanticVersion, SemanticMatcher,
                               suggest_semantic_version),
-    'adaptive': VersionScheme(adaptive_key, AdaptiveMatcher,
+    'adaptive': VersionScheme(AdaptiveVersion, AdaptiveMatcher,
                               suggest_adaptive_version),
 }
 
