@@ -10,13 +10,12 @@ from compat import unittest
 
 from distlib.version import (NormalizedVersion as NV, NormalizedMatcher as NM,
                              UnlimitedMajorVersion as UV,
-                             suggest_semantic_version,
                              suggest_adaptive_version,
                              LegacyVersion as LV, LegacyMatcher as LM,
                              SemanticVersion as SV, SemanticMatcher as SM,
                              AdaptiveVersion as AV, AdaptiveMatcher as AM,
-                             is_semver, get_scheme, adaptive_key,
-                             normalized_key, semantic_key,
+                             get_scheme, adaptive_key,
+                             normalized_key,
                              pep386_key)
 
 
@@ -189,7 +188,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertEqual(suggest('1.4p1'), '1.4.post1')
 
     def test_suggestions_other(self):
-        suggest = suggest_semantic_version
+        suggest = get_scheme("semantic").suggest
         self.assertEqual(suggest(''), '0.0.0')
         self.assertEqual(suggest('1'), '1.0.0')
         self.assertEqual(suggest('1.2'), '1.2.0')
@@ -473,16 +472,14 @@ class SemanticVersionTestCase(unittest.TestCase):
             '1.2.3-pre.1.abc.2.def+post.1.abc.2.def',
         ]
         for s in bad:
-            self.assertFalse(is_semver(s))
-            self.assertRaises(ValueError, semantic_key, s)
+            self.assertRaises(ValueError, SV, s)
 
         for s in good:
-            self.assertTrue(is_semver(s))
+            SV(s)
 
     def test_ordering(self):
         def compare(a, b):
-            ka, kb = semantic_key(a), semantic_key(b)
-            self.assertLess(ka, kb)
+            self.assertLess(SV(a), SV(b))
 
         # From the semver.org home page
         versions = (

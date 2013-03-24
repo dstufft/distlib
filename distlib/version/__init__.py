@@ -12,6 +12,7 @@ import re
 
 from .base import Version, Matcher, VersionScheme
 from .standard import NormalizedVersion, NormalizedMatcher, NormalizedVersionScheme
+from .semantic import SemanticVersion, SemanticMatcher, SemanticVersionScheme
 from .legacy import LegacyVersion, LegacyMatcher, LegacyVersionScheme
 
 __all__ = ['NormalizedVersion', 'NormalizedMatcher',
@@ -171,124 +172,10 @@ class UnlimitedMajorVersion(Version):
     def parse(self, s): return normalized_key(s, False)
 
 
-_REPLACEMENTS = (
-    (re.compile('[.+-]$'), ''),                     # remove trailing puncts
-    (re.compile(r'^[.](\d)'), r'0.\1'),             # .N -> 0.N at start
-    (re.compile('^[.-]'), ''),                      # remove leading puncts
-    (re.compile(r'^\((.*)\)$'), r'\1'),             # remove parentheses
-    (re.compile(r'^v(ersion)?\s*(\d+)'), r'\2'),    # remove leading v(ersion)
-    (re.compile(r'^r(ev)?\s*(\d+)'), r'\2'),        # remove leading v(ersion)
-    (re.compile('[.]{2,}'), '.'),                   # multiple runs of '.'
-    (re.compile(r'\b(alfa|apha)\b'), 'alpha'),      # misspelt alpha
-    (re.compile(r'\b(pre-alpha|prealpha)\b'),
-                'pre.alpha'),                       # standardise
-    (re.compile(r'\(beta\)$'), 'beta'),             # remove parentheses
-)
-
-_SUFFIX_REPLACEMENTS = (
-    (re.compile('^[:~._+-]+'), ''),                   # remove leading puncts
-    (re.compile('[,*")([\]]'), ''),                        # remove unwanted chars
-    (re.compile('[~:+_ -]'), '.'),                    # replace illegal chars
-    (re.compile('[.]{2,}'), '.'),                   # multiple runs of '.'
-    (re.compile(r'\.$'), ''),                       # trailing '.'
-)
-
-_NUMERIC_PREFIX = re.compile(r'(\d+(\.\d+)*)')
-
-def suggest_semantic_version(s):
-    """
-    Try to suggest a semantic form for a version for which
-    suggest_normalized_version couldn't come up with anything.
-    """
-    result = s.strip().lower()
-    for pat, repl in _REPLACEMENTS:
-        result = pat.sub(repl, result)
-    if not result:
-        result = '0.0.0'
-
-    # Now look for numeric prefix, and separate it out from
-    # the rest.
-    #import pdb; pdb.set_trace()
-    m = _NUMERIC_PREFIX.match(result)
-    if not m:
-        prefix = '0.0.0'
-        suffix = result
-    else:
-        prefix = m.groups()[0].split('.')
-        prefix = [int(i) for i in prefix]
-        while len(prefix) < 3:
-            prefix.append(0)
-        if len(prefix) == 3:
-            suffix = result[m.end():]
-        else:
-            suffix = '.'.join([str(i) for i in prefix[3:]]) + result[m.end():]
-            prefix = prefix[:3]
-        prefix = '.'.join([str(i) for i in prefix])
-        suffix = suffix.strip()
-    if suffix:
-        #import pdb; pdb.set_trace()
-        # massage the suffix.
-        for pat, repl in _SUFFIX_REPLACEMENTS:
-            suffix = pat.sub(repl, suffix)
-
-    if not suffix:
-        result = prefix
-    else:
-        sep = '-' if 'dev' in suffix else '+'
-        result = prefix + sep + suffix
-    if not is_semver(result):
-        result = None
-    return result
-
-
 def suggest_adaptive_version(s):
-    return NormalizedVersionScheme().suggest(s) or suggest_semantic_version(s)
+    return NormalizedVersionScheme().suggest(s) or SemanticVersionScheme().suggest(s)
 
 
-
-#
-#   Semantic versioning
-#
-
-_SEMVER_RE = re.compile(r'^(\d+)\.(\d+)\.(\d+)'
-                        r'(-[a-z0-9]+(\.[a-z0-9-]+)*)?'
-                        r'(\+[a-z0-9]+(\.[a-z0-9-]+)*)?$', re.I)
-
-def is_semver(s):
-    return _SEMVER_RE.match(s)
-
-def semantic_key(s):
-    def make_tuple(s, absent):
-        if s is None:
-            result = (absent,)
-        else:
-            parts = s[1:].split('.')
-            # We can't compare ints and strings on Python 3, so fudge it
-            # by zero-filling numeric values so simulate a numeric comparison
-            result = tuple([p.zfill(8) if p.isdigit() else p for p in parts])
-        return result
-
-    result = None
-    m = is_semver(s)
-    if not m:
-        raise ValueError(s)
-    groups = m.groups()
-    major, minor, patch = [int(i) for i in groups[:3]]
-    # choose the '|' and '*' so that versions sort correctly
-    pre, build = make_tuple(groups[3], '|'), make_tuple(groups[5], '*')
-    return ((major, minor, patch), pre, build)
-
-
-class SemanticVersion(Version):
-    def parse(self, s): return semantic_key(s)
-
-    @property
-    def is_prerelease(self):
-        return self._parts[1][0] != '|'
-
-
-class SemanticMatcher(Matcher):
-    version_class = SemanticVersion
 
 #
 # Adaptive versioning. When handed a legacy version string, tries to
@@ -303,8 +190,8 @@ def adaptive_key(s):
         if ss is not None:
             result = normalized_key(ss)     # "guaranteed" to work
         else:
-            ss = s # suggest_semantic_version(s) or s
-            result = semantic_key(ss)       # let's hope ...
+            ss = s  # suggest_semantic_version(s) or s
+            result = SemanticVersion(ss)._parts  # let's hope ...
     return result
 
 
@@ -330,8 +217,7 @@ class AdaptiveMatcher(NormalizedMatcher):
 _SCHEMES = {
     'normalized': NormalizedVersionScheme(),
     'legacy': LegacyVersionScheme(),
-    'semantic': VersionScheme(SemanticVersion, SemanticMatcher,
-                              suggest_semantic_version),
+    'semantic': SemanticVersionScheme(),
     'adaptive': VersionScheme(AdaptiveVersion, AdaptiveMatcher,
                               suggest_adaptive_version),
 }
