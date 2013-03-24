@@ -10,7 +10,6 @@ from compat import unittest
 
 from distlib.version import (NormalizedVersion as NV, NormalizedMatcher as NM,
                              UnlimitedMajorVersion as UV,
-                             HugeMajorVersionError, UnsupportedVersionError,
                              suggest_normalized_version,
                              suggest_semantic_version,
                              suggest_adaptive_version,
@@ -66,7 +65,7 @@ class VersionTestCase(unittest.TestCase):
     def test_huge_version(self):
         raise unittest.SkipTest('Test disabled for now')
         self.assertEqual(str(NV('1980.0')), '1980.0')
-        self.assertRaises(HugeMajorVersionError, NV, '1981.0')
+        self.assertRaises(ValueError, NV, '1981.0')
         self.assertEqual(str(UV('1981.0')), '1981.0')
 
     def test_comparison(self):
@@ -478,7 +477,7 @@ class SemanticVersionTestCase(unittest.TestCase):
         ]
         for s in bad:
             self.assertFalse(is_semver(s))
-            self.assertRaises(UnsupportedVersionError, semantic_key, s)
+            self.assertRaises(ValueError, semantic_key, s)
 
         for s in good:
             self.assertTrue(is_semver(s))
@@ -575,7 +574,7 @@ class AdaptiveVersionTestCase(unittest.TestCase):
             AV(v)
 
         for v in bad_versions:
-            self.assertRaises(UnsupportedVersionError, AV, v)
+            self.assertRaises(ValueError, AV, v)
 
 
     def test_prereleases(self):

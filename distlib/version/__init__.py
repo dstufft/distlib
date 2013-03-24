@@ -23,22 +23,6 @@ __all__ = ['NormalizedVersion', 'NormalizedMatcher',
            'normalized_key', 'legacy_key', 'semantic_key', 'adaptive_key',
            'get_scheme']
 
-class UnsupportedVersionError(Exception):
-    """This is an unsupported version."""
-    pass
-
-
-class HugeMajorVersionError(UnsupportedVersionError):
-    """An irrational version because the major version number is huge
-    (often because a year or date was used).
-
-    See `error_on_huge_major_num` option in `NormalizedVersion` for details.
-    This guard can be disabled by setting that option False.
-    """
-    pass
-
-
-
 
 # A marker used in the second and third parts of the `parts` tuple, for
 # versions that don't have those segments, to sort properly. An example
@@ -96,7 +80,7 @@ def pep386_key(s, fail_on_huge_major_ver=True):
 
     match = _VERSION_RE.search(s)
     if not match:
-        raise UnsupportedVersionError(s)
+        raise ValueError(s)
 
     groups = match.groupdict()
     parts = []
@@ -129,7 +113,7 @@ def pep386_key(s, fail_on_huge_major_ver=True):
     else:
         parts.append(_FINAL_MARKER)
     if fail_on_huge_major_ver and parts[0][0] > 1980:
-        raise HugeMajorVersionError("huge major version number, %r, "
+        raise ValueError("huge major version number, %r, "
            "which might cause future problems: %r" % (parts[0][0], s))
     return tuple(parts)
 
@@ -141,7 +125,7 @@ def pep426_key(s, _=None):
     s = s.strip()
     m = PEP426_VERSION_RE.match(s)
     if not m:
-        raise UnsupportedVersionError('Not a valid version: %s' % s)
+        raise ValueError('Not a valid version: %s' % s)
     groups = m.groups()
     nums = tuple(int(v) for v in groups[0].split('.'))
     while len(nums) > 1 and nums[-1] == 0:
@@ -276,7 +260,7 @@ def suggest_normalized_version(s):
     try:
         normalized_key(s)
         return s   # already rational
-    except UnsupportedVersionError:
+    except ValueError:
         pass
 
     rs = s.lower()
@@ -362,7 +346,7 @@ def suggest_normalized_version(s):
 
     try:
         normalized_key(rs)
-    except UnsupportedVersionError:
+    except ValueError:
         rs = None
     return rs
 
@@ -449,7 +433,7 @@ def semantic_key(s):
     result = None
     m = is_semver(s)
     if not m:
-        raise UnsupportedVersionError(s)
+        raise ValueError(s)
     groups = m.groups()
     major, minor, patch = [int(i) for i in groups[:3]]
     # choose the '|' and '*' so that versions sort correctly
@@ -476,7 +460,7 @@ class SemanticMatcher(Matcher):
 def adaptive_key(s):
     try:
         result = normalized_key(s, False)
-    except UnsupportedVersionError:
+    except ValueError:
         ss = suggest_normalized_version(s)
         if ss is not None:
             result = normalized_key(ss)     # "guaranteed" to work
@@ -494,7 +478,7 @@ class AdaptiveVersion(NormalizedVersion):
         try:
             normalized_key(self._string)
             not_sem = True
-        except UnsupportedVersionError:
+        except ValueError:
             ss = suggest_normalized_version(self._string)
             not_sem = ss is not None
         if not_sem:
@@ -515,7 +499,7 @@ class VersionScheme(object):
         try:
             self.matcher.version_class(s)
             result = True
-        except UnsupportedVersionError:
+        except ValueError:
             result = False
         return result
 
@@ -523,7 +507,7 @@ class VersionScheme(object):
         try:
             self.matcher(s)
             result = True
-        except UnsupportedVersionError:
+        except ValueError:
             result = False
         return result
 
