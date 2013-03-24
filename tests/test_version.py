@@ -10,7 +10,6 @@ from compat import unittest
 
 from distlib.version import (NormalizedVersion as NV, NormalizedMatcher as NM,
                              UnlimitedMajorVersion as UV,
-                             suggest_normalized_version,
                              suggest_semantic_version,
                              suggest_adaptive_version,
                              LegacyVersion as LV, LegacyMatcher as LM,
@@ -158,7 +157,7 @@ class VersionTestCase(unittest.TestCase):
         self.assertGreater(NV('1.0c4'), NV('1.0c1'))
 
     def test_suggest_normalized_version(self):
-        suggest = suggest_normalized_version
+        suggest = get_scheme("normalized").suggest
         self.assertEqual(suggest('1.0'), '1.0')
         self.assertEqual(suggest('1.0-alpha1'), '1.0a1')
         self.assertEqual(suggest('1.0c2'), '1.0c2')
